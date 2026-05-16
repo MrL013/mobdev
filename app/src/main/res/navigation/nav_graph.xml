@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/loginFragment">
+
+    <fragment
+        android:id="@+id/loginFragment"
+        android:name="ui.login.LoginFragment">
+        <action
+            android:id="@+id/action_loginFragment_to_chatHostFragment"
+            app:destination="@id/chatHostFragment"
+            app:popUpTo="@id/loginFragment"
+            app:popUpToInclusive="true" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/chatHostFragment"
+        android:name="ui.chat.ChatHostFragment">
+        <action
+            android:id="@+id/action_chatHostFragment_to_loginFragment"
+            app:destination="@id/loginFragment"
+            app:popUpTo="@id/chatHostFragment"
+            app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/action_chatHostFragment_to_messagesFragment"
+            app:destination="@id/messagesFragment" />
+        <action
+            android:id="@+id/action_chatHostFragment_to_imageFragment"
+            app:destination="@id/imageFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/messagesFragment"
+        android:name="ui.chat.MessagesFragment">
+        <argument android:name="chatName" app:argType="string" />
+        <action
+            android:id="@+id/action_messagesFragment_to_imageFragment"
+            app:destination="@id/imageFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/imageFragment"
+        android:name="ui.image.ImageFragment">
+        <argument
+            android:name="imagePath"
+            app:argType="string" />
+    </fragment>
+</navigation>
+

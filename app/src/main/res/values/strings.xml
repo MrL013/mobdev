@@ -1,11 +1,14 @@
-﻿<resources>
-    <string name="app_name">Lab2_contacts</string>
-    <string name="no_contacts_permission">No permission to read contacts</string>
-    <string name="grant_permission">Grant permission</string>
-    <string name="no_contacts_found">No contacts found</string>
-    <string name="phone_template">Phone: %1$s</string>
-    <string name="email_template">Email: %1$s</string>
-    <string name="not_specified">not specified</string>
-    <string name="close">Close</string>
-    <string name="unnamed_contact">Unnamed contact</string>
+<resources>
+    <string name="app_name">Lab3 Chat</string>
+    <string name="login">Логин</string>
+    <string name="password">Пароль</string>
+    <string name="sign_in">Войти</string>
+    <string name="logout">Выйти</string>
+    <string name="send">Отправить</string>
+    <string name="message_hint">Сообщение</string>
+    <string name="back_to_chats">К чатам</string>
+    <string name="attach_photo">Фото</string>
+    <string name="choose_chat">Выберите чат</string>
+    <string name="invalid_credentials">Неверный логин или пароль</string>
+    <string name="network_error">Ошибка сети. Повторите позже.</string>
 </resources>

@@ -42,6 +42,7 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
                         .setMessage(state.errorRes)
                         .setPositiveButton(android.R.string.ok, null)
                         .show()
+                    viewModel.consumeError()
                 }
             }
         }

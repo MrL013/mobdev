@@ -39,4 +39,7 @@ interface ChatApi {
         @Part("msg") msg: RequestBody,
         @Part picture: MultipartBody.Part
     ): Response<ResponseBody>
+
+    @POST("messages")
+    suspend fun postMultipartMessage(@Body body: MultipartBody): Response<ResponseBody>
 }

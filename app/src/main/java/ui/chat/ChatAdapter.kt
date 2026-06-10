@@ -31,7 +31,8 @@ class ChatAdapter(
 
     inner class ChatViewHolder(private val binding: ItemChatBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(name: String, isSelected: Boolean) {
-            binding.chatNameText.text = if (isSelected) "• $name" else name
+            binding.chatNameText.text = name
+            binding.root.isSelected = isSelected
             binding.root.setOnClickListener { onClick(name) }
         }
     }

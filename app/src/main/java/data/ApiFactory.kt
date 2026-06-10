@@ -1,8 +1,10 @@
 ﻿package data
 
 import kotlinx.serialization.json.Json
+import lab3.chat.BuildConfig
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import okhttp3.MediaType.Companion.toMediaType
@@ -14,9 +16,15 @@ class ApiFactory(private val sessionManager: SessionManager) {
             sessionManager.token?.let { requestBuilder.addHeader("X-Auth-Token", it) }
             chain.proceed(requestBuilder.build())
         }
+        val loggingInterceptor = HttpLoggingInterceptor().apply {
+            level = if (BuildConfig.DEBUG) HttpLoggingInterceptor.Level.BODY else HttpLoggingInterceptor.Level.NONE
+        }
 
         val json = Json { ignoreUnknownKeys = true }
-        val client = OkHttpClient.Builder().addInterceptor(tokenInterceptor).build()
+        val client = OkHttpClient.Builder()
+            .addInterceptor(tokenInterceptor)
+            .addInterceptor(loggingInterceptor)
+            .build()
 
         val retrofit = Retrofit.Builder()
             .baseUrl("https://faerytea.name/")

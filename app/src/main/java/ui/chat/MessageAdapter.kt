@@ -35,7 +35,17 @@ class MessageAdapter(private val onImageClick: (String) -> Unit) : RecyclerView.
                 binding.messageImage.visibility = View.GONE
             } else {
                 binding.messageImage.visibility = View.VISIBLE
-                binding.messageImage.load("https://faerytea.name/thumb/$path")
+                val imageSource = if (
+                    path.startsWith("content://") ||
+                    path.startsWith("file://") ||
+                    path.startsWith("http://") ||
+                    path.startsWith("https://")
+                ) {
+                    path
+                } else {
+                    "https://faerytea.name/thumb/$path"
+                }
+                binding.messageImage.load(imageSource)
                 binding.messageImage.setOnClickListener { onImageClick(path) }
             }
         }

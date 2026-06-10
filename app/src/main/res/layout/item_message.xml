@@ -19,6 +19,7 @@
     <ImageView
         android:id="@+id/messageImage"
         android:adjustViewBounds="true"
+        android:contentDescription="@string/message_image"
         android:maxHeight="220dp"
         android:layout_width="180dp"
         android:layout_height="wrap_content"

@@ -3,6 +3,7 @@
 import android.content.res.Configuration
 import android.os.Bundle
 import android.view.View
+import android.widget.Toast
 import androidx.activity.addCallback
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.commit
@@ -68,6 +69,14 @@ class ChatHostFragment : Fragment(R.layout.fragment_chat_host) {
         viewLifecycleOwner.lifecycleScope.launch {
             viewModel.uiState.collect { state ->
                 adapter.submit(state.channels, state.selectedChat)
+                if (state.error != null) {
+                    Toast.makeText(
+                        requireContext(),
+                        state.error.ifBlank { getString(R.string.network_error) },
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    viewModel.consumeError()
+                }
                 if (state.unauthorized) {
                     viewModel.consumeUnauthorized()
                     findNavController().navigate(R.id.action_chatHostFragment_to_loginFragment)

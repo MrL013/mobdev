@@ -8,6 +8,9 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import data.ChatRepository
+import data.UnauthorizedException
+import lab3.chat.R
+import retrofit2.HttpException
 
 data class LoginUiState(
     val success: Boolean = false,
@@ -28,7 +31,7 @@ class LoginViewModel(
             viewModelScope.launch {
                 repository.loginWithSavedCredentials()
                     .onSuccess { _uiState.value = LoginUiState(success = true) }
-                    .onFailure { _uiState.value = LoginUiState(errorRes = null) }
+                    .onFailure { _uiState.value = LoginUiState() }
             }
         }
     }
@@ -38,7 +41,21 @@ class LoginViewModel(
         viewModelScope.launch {
             repository.login(login, password)
                 .onSuccess { _uiState.value = LoginUiState(success = true) }
-                .onFailure { _uiState.value = LoginUiState(success = false, errorRes = lab3.chat.R.string.invalid_credentials) }
+                .onFailure { error ->
+                    _uiState.value = LoginUiState(errorRes = error.toLoginErrorRes())
+                }
+        }
+    }
+
+    fun consumeError() {
+        _uiState.value = _uiState.value.copy(errorRes = null)
+    }
+
+    private fun Throwable.toLoginErrorRes(): Int {
+        return if (this is UnauthorizedException || this is HttpException && code() == 401) {
+            R.string.invalid_credentials
+        } else {
+            R.string.network_error
         }
     }
 }
@@ -48,6 +65,10 @@ class LoginViewModelFactory(
     private val hasSavedCredentials: Boolean
 ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
+        if (!modelClass.isAssignableFrom(LoginViewModel::class.java)) {
+            throw IllegalArgumentException("Unknown ViewModel class")
+        }
+        @Suppress("UNCHECKED_CAST")
         return LoginViewModel(repository, hasSavedCredentials) as T
     }
 }

@@ -11,4 +11,7 @@
     <string name="choose_chat">Выберите чат</string>
     <string name="invalid_credentials">Неверный логин или пароль</string>
     <string name="network_error">Ошибка сети. Повторите позже.</string>
+    <string name="close_image">Закрыть</string>
+    <string name="message_image">Изображение в сообщении</string>
+    <string name="full_image">Изображение</string>
 </resources>

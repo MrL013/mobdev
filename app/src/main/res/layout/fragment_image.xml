@@ -7,7 +7,16 @@
         android:id="@+id/fullImageView"
         android:layout_gravity="center"
         android:adjustViewBounds="true"
+        android:contentDescription="@string/full_image"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
+
+    <Button
+        android:id="@+id/closeImageButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|end"
+        android:layout_margin="16dp"
+        android:text="@string/close_image" />
 
 </FrameLayout>

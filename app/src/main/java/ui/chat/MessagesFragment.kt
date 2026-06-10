@@ -3,10 +3,12 @@
 import android.content.res.Configuration
 import android.os.Bundle
 import android.view.View
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.NavOptions
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -34,12 +36,16 @@ class MessagesFragment : Fragment(R.layout.fragment_messages) {
         viewModel.selectChat(chatName)
 
         val isLandscape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+        if (isLandscape && parentFragment !is ChatHostFragment) {
+            findNavController().navigateUp()
+            return
+        }
         b.backButton.visibility = if (isLandscape) View.GONE else View.VISIBLE
         b.backButton.setOnClickListener { findNavController().navigateUp() }
 
         val adapter = MessageAdapter { path ->
             findNavController().navigate(
-                R.id.action_messagesFragment_to_imageFragment,
+                R.id.imageFragment,
                 Bundle().apply { putString("imagePath", path) }
             )
         }
@@ -59,15 +65,34 @@ class MessagesFragment : Fragment(R.layout.fragment_messages) {
         b.sendButton.setOnClickListener {
             viewModel.sendMessage(b.messageInput.text.toString())
             b.messageInput.setText("")
+            b.messagesRecycler.post {
+                if (adapter.itemCount > 0) {
+                    b.messagesRecycler.scrollToPosition(adapter.itemCount - 1)
+                }
+            }
         }
         b.attachImageButton.setOnClickListener { pickImage.launch("image/*") }
 
         viewLifecycleOwner.lifecycleScope.launch {
             viewModel.uiState.collect { state ->
                 adapter.submit(state.messages)
+                if (state.error != null) {
+                    Toast.makeText(
+                        requireContext(),
+                        state.error.ifBlank { getString(R.string.network_error) },
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    viewModel.consumeError()
+                }
                 if (state.unauthorized) {
                     viewModel.consumeUnauthorized()
-                    findNavController().navigate(R.id.loginFragment)
+                    findNavController().navigate(
+                        R.id.loginFragment,
+                        null,
+                        NavOptions.Builder()
+                            .setPopUpTo(R.id.nav_graph, true)
+                            .build()
+                    )
                 }
             }
         }

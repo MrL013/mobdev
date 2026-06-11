@@ -12,6 +12,7 @@ import data.ChatRepository
 import data.ImageData
 import data.MessageData
 import data.MessageDto
+import data.OfflineException
 import data.TextData
 import data.UnauthorizedException
 
@@ -35,8 +36,23 @@ class ChatViewModel(private val repository: ChatRepository) : ViewModel() {
     private val oldestMessageIdByChat = mutableMapOf<String, String?>()
     private val canLoadMoreByChat = mutableMapOf<String, Boolean>()
 
+    init {
+        viewModelScope.launch {
+            repository.observeNetwork().collect { isOnline ->
+                if (isOnline) {
+                    loadChannels(force = true)
+                    if (_uiState.value.selectedChat != null) refreshChat()
+                }
+            }
+        }
+    }
+
     fun loadChannelsIfNeeded() {
-        if (_uiState.value.channels.isNotEmpty()) return
+        loadChannels(force = false)
+    }
+
+    private fun loadChannels(force: Boolean) {
+        if (!force && _uiState.value.channels.isNotEmpty()) return
         viewModelScope.launch {
             repository.channels().onSuccess { channels ->
                 _uiState.value = _uiState.value.copy(channels = channels)
@@ -93,10 +109,15 @@ class ChatViewModel(private val repository: ChatRepository) : ViewModel() {
         )
         updateChatMessages(chat, messagesByChat[chat].orEmpty() + localMessage)
         viewModelScope.launch {
-            repository.sendMessage(chat, trimmedText).onFailure { error ->
-                updateChatMessages(chat, messagesByChat[chat].orEmpty().filterNot { it.id == localMessage.id })
-                handleFailure(error)
-            }
+            repository.sendMessage(chat, trimmedText)
+                .onSuccess {
+                    updateChatMessages(chat, messagesByChat[chat].orEmpty().filterNot { it.id == localMessage.id })
+                    refreshChat()
+                }
+                .onFailure { error ->
+                    updateChatMessages(chat, messagesByChat[chat].orEmpty().filterNot { it.id == localMessage.id })
+                    handleFailure(error)
+                }
         }
     }
 
@@ -110,10 +131,15 @@ class ChatViewModel(private val repository: ChatRepository) : ViewModel() {
         )
         updateChatMessages(chat, messagesByChat[chat].orEmpty() + localMessage)
         viewModelScope.launch {
-            repository.sendImageMessage(chat, uri, contentResolver).onFailure { error ->
-                updateChatMessages(chat, messagesByChat[chat].orEmpty().filterNot { it.id == localMessage.id })
-                handleFailure(error)
-            }
+            repository.sendImageMessage(chat, uri, contentResolver)
+                .onSuccess {
+                    updateChatMessages(chat, messagesByChat[chat].orEmpty().filterNot { it.id == localMessage.id })
+                    refreshChat()
+                }
+                .onFailure { error ->
+                    updateChatMessages(chat, messagesByChat[chat].orEmpty().filterNot { it.id == localMessage.id })
+                    handleFailure(error)
+                }
         }
     }
 
@@ -160,6 +186,7 @@ class ChatViewModel(private val repository: ChatRepository) : ViewModel() {
     private fun updateChatMessages(chat: String, messages: List<MessageDto>) {
         val mergedMessages = mergeMessages(messages)
         messagesByChat[chat] = mergedMessages
+        repository.cacheMessages(chat, mergedMessages)
         if (_uiState.value.selectedChat == chat) {
             _uiState.value = _uiState.value.copy(messages = mergedMessages)
         }
@@ -218,6 +245,8 @@ class ChatViewModel(private val repository: ChatRepository) : ViewModel() {
     private fun handleFailure(error: Throwable) {
         if (error is UnauthorizedException) {
             _uiState.value = _uiState.value.copy(unauthorized = true)
+        } else if (error is OfflineException) {
+            _uiState.value = _uiState.value.copy(error = "No network connection")
         } else {
             _uiState.value = _uiState.value.copy(error = error.message)
         }

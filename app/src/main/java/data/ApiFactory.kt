@@ -1,7 +1,6 @@
 ﻿package data
 
 import kotlinx.serialization.json.Json
-import lab3.chat.BuildConfig
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -9,7 +8,7 @@ import retrofit2.Retrofit
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import okhttp3.MediaType.Companion.toMediaType
 
-class ApiFactory(private val sessionManager: SessionManager) {
+class ChatApiFactory(private val sessionManager: SessionManager) {
     fun createApi(): ChatApi {
         val tokenInterceptor = Interceptor { chain ->
             val requestBuilder = chain.request().newBuilder()
@@ -17,7 +16,7 @@ class ApiFactory(private val sessionManager: SessionManager) {
             chain.proceed(requestBuilder.build())
         }
         val loggingInterceptor = HttpLoggingInterceptor().apply {
-            level = if (BuildConfig.DEBUG) HttpLoggingInterceptor.Level.BODY else HttpLoggingInterceptor.Level.NONE
+            level = HttpLoggingInterceptor.Level.BODY
         }
 
         val json = Json { ignoreUnknownKeys = true }
